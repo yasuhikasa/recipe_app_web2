@@ -56,14 +56,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 5. 調理のポイント（切り方や火加減など、初心者でも美味しく料理できる役立つ情報。）
     `;
 
-    // ストリーミングレスポンスの設定
-    res.setHeader("Content-Type", "text/event-stream");
-    res.setHeader("Cache-Control", "no-cache");
-    res.setHeader("Connection", "keep-alive");
-
     console.log("Sending request to OpenAI API...");
 
-    // OpenAI ChatCompletion API を呼び出し（ストリーミング有効化）
+    // OpenAI ChatCompletion API を呼び出し（ストリーミング無効化）
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini", // 現行バージョンのモデル名
       messages: [
@@ -72,24 +67,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       ],
       max_tokens: 1000,
       temperature: 0.6,
-      stream: true, // ストリーミングを有効化
+      stream: false, // ストリーミングを無効化
     });
 
     console.log("Response from OpenAI API received.");
 
-    // ストリームを逐次的にクライアントへ送信
-    for await (const part of completion) {
-      const content = part.choices[0]?.delta?.content;
-      if (content) {
-        res.write(`data: ${JSON.stringify({ content })}\n\n`);
-      }
-    }
-
-    res.end(); // ストリームを終了
+    // レシピをクライアントに送信
+    res.status(200).json({ recipe: completion.choices[0]?.message?.content });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     console.error("Error generating recipe:", errorMessage);
-    res.setHeader("Content-Type", "application/json");
     res.status(500).json({ message: "レシピ生成中にエラーが発生しました。", error: errorMessage });
   }
 }
