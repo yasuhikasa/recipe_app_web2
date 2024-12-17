@@ -51,10 +51,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           throw error;
         }
 
-        if (!data) {
-          return res.status(404).json({ message: 'Recipe not found or not authorized' });
-        }
-
         res.status(200).json({ message: 'Recipe deleted successfully' });
       } catch (error: unknown) {
         if (error instanceof Error)
