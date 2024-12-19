@@ -20,41 +20,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           .eq('user_id', user_id);
 
         if (labelsError) {
-          console.error('Error fetching labels:', labelsError.message);
-          return res.status(500).json({ message: labelsError.message });
+          throw new Error(`Error fetching labels: ${labelsError.message}`);
         }
 
-        // レシピ取得（ラベルでフィルタリング）
-        let query = supabase
+        // ラベルに紐づくレシピを取得
+        let recipesQuery = supabase
           .from('recipes')
           .select(`
             id, title,
-            recipe_labels!left(label_id)
+            recipe_labels!inner(label_id)
           `)
           .eq('user_id', user_id);
 
-        // ラベルでフィルタリング
-        if (label_id && typeof label_id === 'string') {
-          query = query.eq('recipe_labels.label_id', label_id);
+        if (label_id) {
+          recipesQuery = recipesQuery.eq('recipe_labels.label_id', label_id);
         }
 
-        const { data: recipes, error: recipesError } = await query;
+        const { data: recipes, error: recipesError } = await recipesQuery;
 
         if (recipesError) {
-          console.error('Error fetching recipes:', recipesError.message);
-          return res.status(500).json({ message: recipesError.message });
+          throw new Error(`Error fetching recipes: ${recipesError.message}`);
         }
 
-        // 中間テーブルが空の場合も安全に処理
-        const filteredRecipes = recipes?.map((recipe) => ({
-          id: recipe.id,
-          title: recipe.title,
-        }));
-
-        return res.status(200).json({ recipes: filteredRecipes || [], labels: labels || [] });
-      } catch (error) {
-        console.error('Unexpected Error:', error);
-        return res.status(500).json({ message: 'Unexpected server error occurred.' });
+        return res.status(200).json({ labels: labels || [], recipes: recipes || [] });
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+        console.error('Error in handler:', error.message);
+        return res.status(500).json({ message: error.message || 'Unexpected server error' });
+        }
       }
     }
 
