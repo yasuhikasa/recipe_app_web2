@@ -4,7 +4,7 @@ import supabase from '../../../lib/supabaseClient'; // Supabaseクライアン�
  
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { method } = req;
-  const { user_id } = req.query;
+  const { user_id, name } = req.body;
 
   if (typeof user_id !== 'string') {
     return res.status(400).json({ message: 'user_id is required' });
@@ -27,7 +27,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     case 'POST':
       console.log('Request Body:', req.body);
       // 新しいラベルを作成
-      const { user_id, name } = req.body;
       if (!user_id || !name) {
         console.error('Validation Failed: Missing user_id or name');
         return res.status(400).json({ message: 'user_id and name are required' });
