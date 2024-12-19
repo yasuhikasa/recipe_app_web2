@@ -24,23 +24,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         // レシピを取得
-        let recipesQuery = supabase
-          .from('recipes')
-          .select(`
-            id, title,
-            recipe_labels!inner(label_id)
-          `)
-          .eq('user_id', user_id);
+        let recipes;
 
-        // ラベルが指定されている場合、フィルタリング
-        if (label_id) {
-          recipesQuery = recipesQuery.eq('recipe_labels.label_id', label_id);
-        }
+        if (label_id && label_id !== 'null') {
+          // ラベルが指定されている場合
+          const { data, error } = await supabase
+            .from('recipes')
+            .select(`
+              id, title,
+              recipe_labels!inner(label_id)
+            `)
+            .eq('user_id', user_id)
+            .eq('recipe_labels.label_id', label_id);
 
-        const { data: recipes, error: recipesError } = await recipesQuery;
+          if (error) {
+            throw new Error(`Error fetching recipes: ${error.message}`);
+          }
 
-        if (recipesError) {
-          throw new Error(`Error fetching recipes: ${recipesError.message}`);
+          recipes = data;
+        } else {
+          // 全レシピを取得
+          const { data, error } = await supabase
+            .from('recipes')
+            .select('id, title')
+            .eq('user_id', user_id);
+
+          if (error) {
+            throw new Error(`Error fetching recipes: ${error.message}`);
+          }
+
+          recipes = data;
         }
 
         return res.status(200).json({ labels: labels || [], recipes: recipes || [] });
@@ -49,6 +62,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           console.error('Error in handler:', error.message);
           return res.status(500).json({ message: error.message || 'Unexpected server error' });
         }
+        return res.status(500).json({ message: 'Unknown error occurred' });
       }
     }
 
