@@ -28,7 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(500).json({ message: error.message });
       }
 
-      return res.status(200).json({ recipes: data });
+      return res.status(200).json({ recipes: data || [] });
 
     case 'POST': {
       const { user_id, name } = req.body;
