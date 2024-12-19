@@ -23,7 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           throw new Error(`Error fetching labels: ${labelsError.message}`);
         }
 
-        // ラベルに紐づくレシピを取得
+        // レシピを取得
         let recipesQuery = supabase
           .from('recipes')
           .select(`
@@ -33,6 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           .eq('user_id', user_id);
 
         if (label_id) {
+          // 指定されたラベルに紐づくレシピを取得
           recipesQuery = recipesQuery.eq('recipe_labels.label_id', label_id);
         }
 
@@ -44,10 +45,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         return res.status(200).json({ labels: labels || [], recipes: recipes || [] });
       } catch (error: unknown) {
-        if (error instanceof Error) {
-        console.error('Error in handler:', error.message);
-        return res.status(500).json({ message: error.message || 'Unexpected server error' });
-        }
+        console.error('Error in handler:', error);
+        return res.status(500).json({ message: 'Unexpected server error' });
       }
     }
 
