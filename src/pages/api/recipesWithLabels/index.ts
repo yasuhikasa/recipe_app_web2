@@ -13,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       try {
-        // ラベル一覧を取得
+        // ラベルを取得
         const { data: labels, error: labelsError } = await supabase
           .from('labels')
           .select('id, name')
@@ -32,8 +32,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           `)
           .eq('user_id', user_id);
 
+        // ラベルが指定されている場合、フィルタリング
         if (label_id) {
-          // 指定されたラベルに紐づくレシピを取得
           recipesQuery = recipesQuery.eq('recipe_labels.label_id', label_id);
         }
 
@@ -45,8 +45,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         return res.status(200).json({ labels: labels || [], recipes: recipes || [] });
       } catch (error: unknown) {
-        console.error('Error in handler:', error);
-        return res.status(500).json({ message: 'Unexpected server error' });
+        if (error instanceof Error) {
+          console.error('Error in handler:', error.message);
+          return res.status(500).json({ message: error.message || 'Unexpected server error' });
+        }
       }
     }
 
