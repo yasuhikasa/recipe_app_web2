@@ -13,28 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       try {
-        // 基本クエリ（ユーザーのレシピを取得）
-        let query = supabase
-          .from('recipes')
-          .select(`
-            id, title,
-            recipe_labels (label_id)
-          `)
-          .eq('user_id', user_id);
-
-        // ラベルが指定されている場合はフィルタリング
-        if (label_id && typeof label_id === 'string') {
-          query = query.contains('recipe_labels', [{ label_id }]);
-        }
-
-        const { data: recipes, error: recipesError } = await query;
-
-        if (recipesError) {
-          console.error('Error fetching recipes:', recipesError.message);
-          return res.status(500).json({ message: recipesError.message });
-        }
-
-        // ラベルを取得
+        // ラベル一覧を取得
         const { data: labels, error: labelsError } = await supabase
           .from('labels')
           .select('id, name')
@@ -45,10 +24,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           return res.status(500).json({ message: labelsError.message });
         }
 
-        return res.status(200).json({ recipes: recipes || [], labels: labels || [] });
-      } catch (error: unknown) {
-        if (error instanceof Error)
-        console.error('Unexpected Error:', error.message);
+        // レシピ取得（ラベルでフィルタリング）
+        let query = supabase
+          .from('recipes')
+          .select(`
+            id, title,
+            recipe_labels!left(label_id)
+          `)
+          .eq('user_id', user_id);
+
+        // ラベルでフィルタリング
+        if (label_id && typeof label_id === 'string') {
+          query = query.eq('recipe_labels.label_id', label_id);
+        }
+
+        const { data: recipes, error: recipesError } = await query;
+
+        if (recipesError) {
+          console.error('Error fetching recipes:', recipesError.message);
+          return res.status(500).json({ message: recipesError.message });
+        }
+
+        // 中間テーブルが空の場合も安全に処理
+        const filteredRecipes = recipes?.map((recipe) => ({
+          id: recipe.id,
+          title: recipe.title,
+        }));
+
+        return res.status(200).json({ recipes: filteredRecipes || [], labels: labels || [] });
+      } catch (error) {
+        console.error('Unexpected Error:', error);
         return res.status(500).json({ message: 'Unexpected server error occurred.' });
       }
     }
