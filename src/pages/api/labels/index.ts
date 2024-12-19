@@ -25,18 +25,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(200).json({ labels });
 
     case 'POST':
+      console.log('Request Body:', req.body);
       // 新しいラベルを作成
-      const { user_id: bodyUserId, name } = req.body;
-      if (!bodyUserId || !name) {
+      const { user_id, name } = req.body;
+      if (!user_id || !name) {
+        console.error('Validation Failed: Missing user_id or name');
         return res.status(400).json({ message: 'user_id and name are required' });
       }
 
       const { data: insertData, error: insertError } = await supabase
         .from('labels')
-        .insert([{ user_id: bodyUserId, name }])
+        .insert([{ user_id, name }])
         .single();
 
       if (insertError) {
+        console.error('Insert Error:', insertError.message);
         return res.status(500).json({ message: insertError.message });
       }
 
