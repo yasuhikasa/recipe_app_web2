@@ -60,6 +60,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
       break;
 
+      case 'PATCH':
+        const { title } = req.body;
+        const { recipeId } = req.query;
+      
+        if (!title || typeof title !== 'string') {
+          return res.status(400).json({ message: 'Title is required' });
+        }
+      
+        const { error: updateError } = await supabase
+          .from('recipes')
+          .update({ title })
+          .eq('id', recipeId);
+      
+        if (updateError) {
+          return res.status(500).json({ message: updateError.message });
+        }
+      
+        return res.status(200).json({ message: 'Recipe title updated' });
+      
+
     default:
       res.setHeader('Allow', ['GET', 'DELETE']);
       res.status(405).end(`Method ${method} Not Allowed`);
