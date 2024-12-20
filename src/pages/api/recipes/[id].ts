@@ -1,4 +1,3 @@
-// pages/api/recipes/[id].ts
 import { NextApiRequest, NextApiResponse } from 'next';
 import supabase from '../../../lib/supabaseClient';
 
@@ -12,29 +11,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   switch (method) {
     case 'GET':
-      // レシピ詳細取得
       try {
-        const { data, error } = await supabase
+        const { data: recipeData, error: recipeError } = await supabase
           .from('recipes')
           .select('*')
           .eq('id', id)
           .single();
 
-        if (error) {
-          throw error;
+        if (recipeError || !recipeData) {
+          throw new Error(`Error fetching recipe: ${recipeError?.message || 'Recipe not found'}`);
         }
 
         res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-        res.status(200).json({ recipe: data });
+        res.status(200).json({ recipe: recipeData });
       } catch (error: unknown) {
-        if (error instanceof Error)
-        console.error('Error fetching recipe:', error.message);
-        res.status(500).json({ message: 'Error fetching recipe' });
+        if (error instanceof Error) {
+          console.error('Error fetching recipe:', error.message);
+          res.status(500).json({ message: 'Error fetching recipe' });
+        }
       }
       break;
 
     case 'DELETE':
-      // レシピ削除
       const { user_id } = req.body;
 
       if (!user_id || typeof user_id !== 'string') {
@@ -42,22 +40,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       try {
-        const { data, error } = await supabase
+        const { error: deleteError } = await supabase
           .from('recipes')
           .delete()
           .eq('id', id)
           .eq('user_id', user_id);
 
-        if (error) {
-          throw error;
+        if (deleteError) {
+          throw new Error(`Error deleting recipe: ${deleteError.message}`);
         }
 
         res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
         res.status(200).json({ message: 'Recipe deleted successfully' });
       } catch (error: unknown) {
-        if (error instanceof Error)
-        console.error('Error deleting recipe:', error.message);
-        res.status(500).json({ message: 'Error deleting recipe' });
+        if (error instanceof Error) {
+          console.error('Error deleting recipe:', error.message);
+          res.status(500).json({ message: 'Error deleting recipe' });
+        }
       }
       break;
 
