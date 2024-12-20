@@ -1,4 +1,5 @@
 // src/pages/api/recipes/[id].ts
+// 個別のレシピを取得、更新、削除するAPIエンドポイント
 import { NextApiRequest, NextApiResponse } from 'next';
 import supabase from '../../../lib/supabaseClient';
 

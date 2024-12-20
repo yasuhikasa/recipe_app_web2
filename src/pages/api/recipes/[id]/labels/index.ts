@@ -37,6 +37,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const { label_id } = req.body;
 
       if (!label_id || typeof label_id !== 'string') {
+        console.error('Missing label_id in request body:', req.body);
         return res.status(400).json({ message: 'label_id is required' });
       }
 
