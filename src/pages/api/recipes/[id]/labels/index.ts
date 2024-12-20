@@ -34,9 +34,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     case 'POST': {
-      const { label_id } = req.body;
+      const { labelId } = req.body;
 
-      if (!label_id) {
+      if (!labelId) {
         console.error('Missing label_id in request body:', req.body);
         return res.status(400).json({ message: 'label_id is required' });
       }
@@ -44,7 +44,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       try {
         const { error: insertError } = await supabase
           .from('recipe_labels')
-          .insert([{ recipe_id: recipeId, label_id }]);
+          .insert([{ recipe_id: recipeId, labelId }]);
 
         if (insertError) {
           throw new Error(insertError.message);
@@ -60,9 +60,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     case 'DELETE': {
-      const { label_id } = req.body;
+      const { labelId } = req.body;
 
-      if (!label_id) {
+      if (!labelId) {
         return res.status(400).json({ message: 'label_id is required' });
       }
 
@@ -71,7 +71,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           .from('recipe_labels')
           .delete()
           .eq('recipe_id', recipeId)
-          .eq('label_id', label_id);
+          .eq('label_id', labelId);
 
         if (deleteError) {
           throw new Error(deleteError.message);
