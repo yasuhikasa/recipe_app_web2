@@ -1,8 +1,9 @@
+// src/pages/api/recipes/[id].ts
 import { NextApiRequest, NextApiResponse } from 'next';
 import supabase from '../../../lib/supabaseClient';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { id } = req.query;
+  const { id } = req.query; // クエリからIDを取得
   const { method } = req;
 
   if (typeof id !== 'string') {
@@ -10,7 +11,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   switch (method) {
-    case 'GET':
+    case 'GET': {
       try {
         const { data: recipeData, error: recipeError } = await supabase
           .from('recipes')
@@ -23,16 +24,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-        res.status(200).json({ recipe: recipeData });
+        return res.status(200).json({ recipe: recipeData });
       } catch (error: unknown) {
         if (error instanceof Error) {
           console.error('Error fetching recipe:', error.message);
-          res.status(500).json({ message: 'Error fetching recipe' });
         }
+        return res.status(500).json({ message: 'Error fetching recipe' });
       }
-      break;
+    }
 
-    case 'DELETE':
+    case 'DELETE': {
       const { user_id } = req.body;
 
       if (!user_id || typeof user_id !== 'string') {
@@ -51,37 +52,45 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-        res.status(200).json({ message: 'Recipe deleted successfully' });
+        return res.status(200).json({ message: 'Recipe deleted successfully' });
       } catch (error: unknown) {
         if (error instanceof Error) {
           console.error('Error deleting recipe:', error.message);
-          res.status(500).json({ message: 'Error deleting recipe' });
         }
+        return res.status(500).json({ message: 'Error deleting recipe' });
       }
-      break;
+    }
 
-      case 'PATCH':
-        const { title } = req.body;
-        const { recipeId } = req.query;
-      
-        if (!title || typeof title !== 'string') {
-          return res.status(400).json({ message: 'Title is required' });
-        }
-      
+    case 'PATCH': {
+      const { title } = req.body; // リクエストボディからタイトルを取得
+
+      if (!title || typeof title !== 'string') {
+        return res.status(400).json({ message: 'Title is required and must be a string' });
+      }
+
+      try {
+        // Supabaseでレシピタイトルを更新
         const { error: updateError } = await supabase
           .from('recipes')
-          .update({ title })
-          .eq('id', recipeId);
-      
-        if (updateError) {
-          return res.status(500).json({ message: updateError.message });
-        }
-      
-        return res.status(200).json({ message: 'Recipe title updated' });
-      
+          .update({ title }) // 更新するデータ
+          .eq('id', id); // クエリパラメータから取得したレシピIDで絞り込み
 
-    default:
-      res.setHeader('Allow', ['GET', 'DELETE']);
-      res.status(405).end(`Method ${method} Not Allowed`);
+        if (updateError) {
+          throw new Error(`Failed to update recipe title: ${updateError.message}`);
+        }
+
+        return res.status(200).json({ message: 'Recipe title updated successfully' });
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          console.error('Error updating recipe title:', error.message);
+        }
+        return res.status(500).json({ message: 'Error updating recipe title' });
+      }
+    }
+
+    default: {
+      res.setHeader('Allow', ['GET', 'DELETE', 'PATCH']);
+      return res.status(405).end(`Method ${method} Not Allowed`);
+    }
   }
 }
