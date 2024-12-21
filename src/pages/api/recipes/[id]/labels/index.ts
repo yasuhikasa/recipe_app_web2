@@ -12,20 +12,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   switch (method) {
     case 'GET': {
       try {
-        // const { data, error } = await supabase
-        //   .from('recipe_labels')
-        //   .select(`
-        //     label_id,
-        //     labels(name)
-        //   `)
-        //   .eq('recipe_id', recipeId);
         const { data, error } = await supabase
-  .from('recipe_labels')
-  .select('*')
-  .eq('recipe_id', recipeId);
-
-console.log('Raw Data:', data);
-
+          .from('recipe_labels')
+          .select(`
+            label_id,
+            labels(name)
+          `)
+          .eq('recipe_id', recipeId);
 
         if (error) {
           throw new Error(error.message);
