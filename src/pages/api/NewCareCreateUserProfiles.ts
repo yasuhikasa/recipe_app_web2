@@ -68,7 +68,7 @@ export default async function handler(
     await retryOperation(async () => {
       const { error } = await supabase.from('user_profiles').upsert([
         {
-          id: userId,
+          user_id: userId,
         },
       ]);
 
