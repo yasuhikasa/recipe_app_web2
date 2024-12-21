@@ -69,7 +69,7 @@ export default async function handler(
       const { error } = await supabase.from('user_profiles').upsert([
         {
           id: userId,
-          email,
+          email: email,
         },
       ]);
 
