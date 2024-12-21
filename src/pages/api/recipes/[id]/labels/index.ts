@@ -36,7 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     case 'POST': {
       const { label_id } = req.body;
-      console.log('label_id:', label_id);
+      console.log('label_id received in POST:', label_id);
 
       if (!label_id) {
         console.error('Missing label_id in request body:', req.body);

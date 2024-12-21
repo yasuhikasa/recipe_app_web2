@@ -37,16 +37,16 @@ export default async function handler(
       console.error('Supabase管理者APIエラー:', extendedError);
 
       return res.status(500).json({
-        error: extendedError.message,
-        details: extendedError.details || null,
-        hint: extendedError.hint || null,
-        status: extendedError.status || 500,
+        error: 'ユーザー削除に失敗しました。',
+        details: error.message || null,
+        status: error.status || 500,
       });
     }
 
-    return res
-      .status(200)
-      .json({ success: true, message: 'ユーザーが削除されました。' });
+  return res.status(200).json({
+    success: true,
+    message: 'ユーザーが削除されました。',
+  });
   } catch (err) {
     console.error('サーバーエラー:', err);
     return res.status(500).json({ error: 'サーバーエラーが発生しました。' });
