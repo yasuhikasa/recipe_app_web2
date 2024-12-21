@@ -3,7 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 const supabaseAdmin = createClient(
   process.env.SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || '' // サービスロールキーを利用
+  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 );
 
 interface ExtendedAuthError extends Error {
@@ -24,11 +24,14 @@ export default async function handler(
   const { userId } = req.body;
 
   if (!userId) {
+    console.error('リクエストエラー: ユーザーIDが提供されていません。');
     return res.status(400).json({ error: 'ユーザーIDが提供されていません。' });
   }
 
   try {
-    // Supabaseの管理者APIを利用してユーザーを削除
+    console.log(`削除対象のユーザーID: ${userId}`);
+
+    // Supabase管理者APIを利用してユーザーを削除
     const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
 
     if (error) {
@@ -38,15 +41,17 @@ export default async function handler(
 
       return res.status(500).json({
         error: 'ユーザー削除に失敗しました。',
-        details: error.message || null,
-        status: error.status || 500,
+        details: extendedError.message || null,
+        hint: extendedError.hint || null,
+        status: extendedError.status || 500,
       });
     }
 
-  return res.status(200).json({
-    success: true,
-    message: 'ユーザーが削除されました。',
-  });
+    console.log(`ユーザー削除成功: ${userId}`);
+    return res.status(200).json({
+      success: true,
+      message: 'ユーザーが削除されました。',
+    });
   } catch (err) {
     console.error('サーバーエラー:', err);
     return res.status(500).json({ error: 'サーバーエラーが発生しました。' });
