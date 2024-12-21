@@ -58,9 +58,9 @@ export default async function handler(
   }
 
   try {
-    const { userId, email } = req.body;
+    const { userId } = req.body;
 
-    if (!userId || !email) {
+    if (!userId) {
       return res.status(400).json({ error: 'Invalid input data' });
     }
 
@@ -69,7 +69,6 @@ export default async function handler(
       const { error } = await supabase.from('user_profiles').upsert([
         {
           id: userId,
-          email: email,
         },
       ]);
 
