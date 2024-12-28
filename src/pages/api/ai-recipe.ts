@@ -38,7 +38,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // プロンプトの生成
     const prompt = `
-あなたはプロの料理アドバイザーです。以下の条件を元にユーザーが作りたいと思うようなレシピを提案してください。
+あなたはプロの料理アドバイザーです。以下の条件に従ってユーザーが興味を持って作りたいと思うようなレシピを一品提案してください。
 - 今日の気分: ${mood || "指定なし"}
 - 調理時間: ${time || "指定なし"}
 - 食べる時間帯: ${mealTime || "指定なし"}
