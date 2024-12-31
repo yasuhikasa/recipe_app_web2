@@ -9,12 +9,12 @@ const openai = new OpenAI({
 
 // フォームデータの型定義
 type RecipeRequestBody = {
-  mood?: string;
-  time?: string;
-  mealTime?: string;
-  budget?: string;
-  people?: string;
-  effort?: string[];
+  preferences?: string[],
+  skinCare?: string,
+  detox?: string,
+  flavor?: string,
+  cookingMethod?: string,
+  ingredients?: string[],
   preferredIngredients?: string;
 };
 
@@ -25,25 +25,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const {
-      mood,
-      time,
-      mealTime,
-      budget,
-      people,
-      effort = [],
+      preferences= [],
+      skinCare= '',
+      detox= '',
+      flavor= '',
+      cookingMethod= '',
+      ingredients= [],
       preferredIngredients = "",
     } = req.body as RecipeRequestBody;
 
     // プロンプトの生成
     const prompt = `
-あなたはプロの料理アドバイザーです。テーマは「今の気分で作る料理」です。以下の条件に従ってアドバイスを受ける人が興味を持って作りたいと思うようなレシピを一品提案してください。
-- 今の気分: ${mood || "指定なし"}
-- 調理時間: ${time || "指定なし"}
-- 食べる時間帯: ${mealTime || "指定なし"}
-- 予算: ${budget || "指定なし"}
-- 人数: ${people || "指定なし"}
-- 手間: ${effort.length ? effort.join(", ") : "指定なし"}
-- 好きな食材: ${preferredIngredients || "指定なし"}
+あなたはプロの料理アドバイザーです。テーマは「美容・アンチエイジングレシピ」です。以下の条件に従って美容・アンチエイジングに取り組む人が作りたいと思うようなレシピを提案してください。
+- 美容のこだわり: ${preferences.length ? preferences.join(", ") : "おまかせ"}
+- 肌質改善のこだわり: ${skinCare || "おまかせ"}
+- デトックスのこだわり: ${detox || "おまかせ"}
+- 味付け: ${flavor || "おまかせ"}
+- 調理法: ${cookingMethod || "おまかせ"}
+- 使用する食材: ${ingredients || "おまかせ"}
+- その他使いたい食材: ${preferredIngredients || "指定なし"}
 
 レシピには以下の情報を含めてください:
 1. レシピ名

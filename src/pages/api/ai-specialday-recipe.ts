@@ -9,13 +9,12 @@ const openai = new OpenAI({
 
 // フォームデータの型定義
 type RecipeRequestBody = {
-  mood?: string;
-  time?: string;
-  mealTime?: string;
-  budget?: string;
-  people?: string;
-  effort?: string[];
-  preferredIngredients?: string;
+  event?: string;
+  theme?: string;
+  style?: string;
+  ingredient?: string;
+  tableSetting?: string;
+  customNotes?: string;
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -25,25 +24,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const {
-      mood,
-      time,
-      mealTime,
-      budget,
-      people,
-      effort = [],
-      preferredIngredients = "",
+      event= '',
+      theme= '',
+      style= '',
+      ingredient= '',
+      tableSetting= '',
+      customNotes= '',
     } = req.body as RecipeRequestBody;
 
     // プロンプトの生成
     const prompt = `
-あなたはプロの料理アドバイザーです。テーマは「今の気分で作る料理」です。以下の条件に従ってアドバイスを受ける人が興味を持って作りたいと思うようなレシピを一品提案してください。
-- 今の気分: ${mood || "指定なし"}
-- 調理時間: ${time || "指定なし"}
-- 食べる時間帯: ${mealTime || "指定なし"}
-- 予算: ${budget || "指定なし"}
-- 人数: ${people || "指定なし"}
-- 手間: ${effort.length ? effort.join(", ") : "指定なし"}
-- 好きな食材: ${preferredIngredients || "指定なし"}
+あなたはプロの料理アドバイザーです。テーマは「特別な日に作る料理」です。以下の条件に従って記念日を演出したい人が興味を持って作りたいと思うようなレシピを一品提案してください。
+- イベントの種類: ${event || "指定なし"}
+- 料理のテーマ: ${theme || "指定なし"}
+- 料理のスタイル: ${style || "指定なし"}
+- 使いたい食材: ${ingredient || "指定なし"}
+- テーブルセッティング: ${tableSetting || "指定なし"}
+- 特別な希望やメモ: ${customNotes || "指定なし"}
 
 レシピには以下の情報を含めてください:
 1. レシピ名

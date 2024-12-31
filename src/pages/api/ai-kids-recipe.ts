@@ -9,12 +9,11 @@ const openai = new OpenAI({
 
 // フォームデータの型定義
 type RecipeRequestBody = {
-  mood?: string;
-  time?: string;
-  mealTime?: string;
-  budget?: string;
-  people?: string;
-  effort?: string[];
+  preferences?: string[],
+  appearanceTheme?: string,
+  cookingTime?: string,
+  taste?: string,
+  healthFocus?: string,
   preferredIngredients?: string;
 };
 
@@ -25,24 +24,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const {
-      mood,
-      time,
-      mealTime,
-      budget,
-      people,
-      effort = [],
+      preferences = [],
+      appearanceTheme = "",
+      cookingTime = "",
+      taste = "",
+      healthFocus = "",
       preferredIngredients = "",
     } = req.body as RecipeRequestBody;
 
     // プロンプトの生成
     const prompt = `
-あなたはプロの料理アドバイザーです。テーマは「今の気分で作る料理」です。以下の条件に従ってアドバイスを受ける人が興味を持って作りたいと思うようなレシピを一品提案してください。
-- 今の気分: ${mood || "指定なし"}
-- 調理時間: ${time || "指定なし"}
-- 食べる時間帯: ${mealTime || "指定なし"}
-- 予算: ${budget || "指定なし"}
-- 人数: ${people || "指定なし"}
-- 手間: ${effort.length ? effort.join(", ") : "指定なし"}
+あなたはプロの料理アドバイザーです。テーマは「子供が喜ぶ料理」です。以下の条件に従って子供を持つ母親が作りたいと思うような子供が喜ぶレシピを提案してください。
+- 子供が喜ぶポイント: ${preferences.length ? preferences.join(", ") : "おまかせ"}
+- 見た目のテーマ: ${appearanceTheme || "おまかせ"}
+- 調理時間: ${cookingTime || "おまかせ"}
+- 味付けのバリエーション: ${taste || "おまかせ"}
+- 健康志向のこだわり: ${healthFocus || "おまかせ"}
 - 好きな食材: ${preferredIngredients || "指定なし"}
 
 レシピには以下の情報を含めてください:

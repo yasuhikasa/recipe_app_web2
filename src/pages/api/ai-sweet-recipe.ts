@@ -9,13 +9,12 @@ const openai = new OpenAI({
 
 // フォームデータの型定義
 type RecipeRequestBody = {
-  mood?: string;
-  time?: string;
-  mealTime?: string;
-  budget?: string;
-  people?: string;
-  effort?: string[];
-  preferredIngredients?: string;
+  sweetType?: string,
+  sweetFlavor?: string,
+  sweetDecoration?: string,
+  sweetTexture?: string,
+  sweetCookingMethod?: string,
+  sweetIngredient?: string,
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -25,32 +24,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const {
-      mood,
-      time,
-      mealTime,
-      budget,
-      people,
-      effort = [],
-      preferredIngredients = "",
+      sweetType= '',
+      sweetFlavor= '',
+      sweetDecoration= '',
+      sweetTexture= '',
+      sweetCookingMethod= '',
+      sweetIngredient= '',
     } = req.body as RecipeRequestBody;
 
     // プロンプトの生成
     const prompt = `
-あなたはプロの料理アドバイザーです。テーマは「今の気分で作る料理」です。以下の条件に従ってアドバイスを受ける人が興味を持って作りたいと思うようなレシピを一品提案してください。
-- 今の気分: ${mood || "指定なし"}
-- 調理時間: ${time || "指定なし"}
-- 食べる時間帯: ${mealTime || "指定なし"}
-- 予算: ${budget || "指定なし"}
-- 人数: ${people || "指定なし"}
-- 手間: ${effort.length ? effort.join(", ") : "指定なし"}
-- 好きな食材: ${preferredIngredients || "指定なし"}
+あなたはプロのパティシエ、料理アドバイザーです。テーマは「女子受けするスイーツレシピ」です。以下の条件に従ってスイーツ作りに取り組む女の子が作りたいと思うようなレシピを提案してください。
+- スイーツの種類: ${sweetType|| "おまかせ"}
+- 味のテーマ: ${sweetFlavor || "おまかせ"}
+- デコレーション: ${sweetDecoration || "おまかせ"}
+- 食感: ${sweetTexture || "おまかせ"}
+- 調理方法: ${sweetCookingMethod || "おまかせ"}
+- 使用する食材: ${sweetIngredient || "おまかせ"}
 
 レシピには以下の情報を含めてください:
 1. レシピ名
 2. 必要な材料リスト
 3. 詳細な調理手順（初心者が安心して取り組める説明付き）
 4. 完成までの時間
-5. 調理のポイント（切り方や火加減など、初心者でも美味しく料理できる役立つ情報。）
+5. 調理のポイント（切り方や火加減、盛り付け方など、初心者でも美味しく料理できる役立つ情報。）
     `;
 
     console.log("Sending request to OpenAI API...");

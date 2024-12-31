@@ -9,13 +9,11 @@ const openai = new OpenAI({
 
 // フォームデータの型定義
 type RecipeRequestBody = {
-  mood?: string;
-  time?: string;
-  mealTime?: string;
-  budget?: string;
-  people?: string;
-  effort?: string[];
-  preferredIngredients?: string;
+  baseAlcohol?: string;
+  flavorProfile?: string;
+  garnish?: string;
+  style?: string;
+  strength?: string;
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -25,25 +23,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const {
-      mood,
-      time,
-      mealTime,
-      budget,
-      people,
-      effort = [],
-      preferredIngredients = "",
+      baseAlcohol= '',
+      flavorProfile= '',
+      garnish= '',
+      style= '',
+      strength= '',
     } = req.body as RecipeRequestBody;
 
     // プロンプトの生成
     const prompt = `
-あなたはプロの料理アドバイザーです。テーマは「今の気分で作る料理」です。以下の条件に従ってアドバイスを受ける人が興味を持って作りたいと思うようなレシピを一品提案してください。
-- 今の気分: ${mood || "指定なし"}
-- 調理時間: ${time || "指定なし"}
-- 食べる時間帯: ${mealTime || "指定なし"}
-- 予算: ${budget || "指定なし"}
-- 人数: ${people || "指定なし"}
-- 手間: ${effort.length ? effort.join(", ") : "指定なし"}
-- 好きな食材: ${preferredIngredients || "指定なし"}
+あなたはプロのバーテンダー、カクテルアドバイザーです。テーマは「こだわりのカクテル」です。以下の条件に従ってお酒好きな人が作りたいと思うようなカクテルレシピを提案してください。
+- ベースのお酒: ${baseAlcohol || "おまかせ"}
+- フレーバープロファイル: ${flavorProfile || "おまかせ"}
+- 使用する果物・ハーブ: ${garnish || "おまかせ"}
+- 仕上げのスタイル: ${style || "おまかせ"}
+- カクテルの強さ: ${strength || "おまかせ"}
 
 レシピには以下の情報を含めてください:
 1. レシピ名

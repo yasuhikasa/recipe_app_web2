@@ -9,12 +9,11 @@ const openai = new OpenAI({
 
 // フォームデータの型定義
 type RecipeRequestBody = {
-  mood?: string;
-  time?: string;
-  mealTime?: string;
-  budget?: string;
-  people?: string;
-  effort?: string[];
+  sauce?: string;
+  cookingStyle?: string;
+  garnish?: string;
+  cheese?: string;
+  steakDoneness?: string;
   preferredIngredients?: string;
 };
 
@@ -25,25 +24,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const {
-      mood,
-      time,
-      mealTime,
-      budget,
-      people,
-      effort = [],
-      preferredIngredients = "",
+      sauce= '',
+      cookingStyle= '',
+      garnish= '',
+      cheese= '',
+      steakDoneness= '',
+      preferredIngredients= '',
     } = req.body as RecipeRequestBody;
 
     // プロンプトの生成
     const prompt = `
-あなたはプロの料理アドバイザーです。テーマは「今の気分で作る料理」です。以下の条件に従ってアドバイスを受ける人が興味を持って作りたいと思うようなレシピを一品提案してください。
-- 今の気分: ${mood || "指定なし"}
-- 調理時間: ${time || "指定なし"}
-- 食べる時間帯: ${mealTime || "指定なし"}
-- 予算: ${budget || "指定なし"}
-- 人数: ${people || "指定なし"}
-- 手間: ${effort.length ? effort.join(", ") : "指定なし"}
-- 好きな食材: ${preferredIngredients || "指定なし"}
+あなたはプロの洋食料理アドバイザーです。テーマは「こだわりの洋食」です。以下の条件に従って洋食料理に取り組む人が作りたいと思うようなレシピを提案してください。
+- ソースの種類: ${sauce || "おまかせ"}
+- 料理スタイル: ${cookingStyle || "おまかせ"}
+- 付け合わせ: ${garnish || "おまかせ"}
+- チーズの種類: ${cheese || "おまかせ"}
+- ステーキの焼き加減: ${steakDoneness || "おまかせ"}
+- 使いたい食材: ${preferredIngredients || "指定なし"}
 
 レシピには以下の情報を含めてください:
 1. レシピ名
