@@ -43,11 +43,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 - 使いたい食材: ${preferredIngredients || "指定なし"}
 
 レシピには以下の情報を含めてください:
-1. レシピ名
+1. レシピ名: 必ず "### レシピ名: {ここにタイトル}" の形式で記載してください。
 2. 必要な材料リスト
 3. 詳細な調理手順（初心者が安心して取り組める説明付き）
 4. 完成までの時間
 5. 調理のポイント（切り方や火加減など、初心者でも美味しく料理できる役立つ情報。）
+
+【注意事項】
+- 各セクションは必ず記載してください
     `;
 
     console.log("Sending request to OpenAI API...");
@@ -59,7 +62,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         { role: "system", content: "あなたはプロの料理アドバイザーです。" },
         { role: "user", content: prompt },
       ],
-      max_tokens: 1000,
+      max_tokens: 1100,
       temperature: 0.6,
       stream: false, // ストリーミングを無効化
     });
