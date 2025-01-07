@@ -12,8 +12,8 @@ type RecipeRequestBody = {
   mood?: string;
   time?: string;
   mealTime?: string;
-  budget?: string;
-  people?: string;
+  mealStyle?: string;
+  ingredientCategory?: string;
   effort?: string[];
   preferredIngredients?: string;
 };
@@ -28,8 +28,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       mood,
       time,
       mealTime,
-      budget,
-      people,
+      mealStyle,
+      ingredientCategory,
       effort = [],
       preferredIngredients = "",
     } = req.body as RecipeRequestBody;
@@ -40,25 +40,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 - 今の気分: ${mood || "指定なし"}
 - 調理時間: ${time || "指定なし"}
 - 食べる時間帯: ${mealTime || "指定なし"}
-- 予算: ${budget || "指定なし"}
-- 人数: ${people || "指定なし"}
+- 食事のスタイル: ${mealStyle || "指定なし"}
+- 食材カテゴリー: ${ingredientCategory || "指定なし"}
 - 手間: ${effort.length ? effort.join(", ") : "指定なし"}
 - 好きな食材: ${preferredIngredients || "指定なし"}
 
 レシピには以下の情報を含めてください:
 1. レシピ名: 必ず "### レシピ名: {ここにタイトル}" の形式で記載してください。
 2. 必要な材料リスト
-3. 詳細な調理手順: 初心者が安心して取り組める説明を心がけ、注意点や成功させるためのヒントを含めてください。
+3. 詳細な調理手順: 初心者が安心して取り組める説明を心がけてください。
 4. 完成までの時間
-5. 調理のポイント: 切り方や火加減など、初心者でも美味しく料理できる役立つ情報。
+5. 調理のポイント: 初心者でも美味しく料理できる役立つ情報。
 6. 健康志向やリラックス効果の要素: その料理が健康や気分にどのように良い影響を与えるかを説明してください。
-7. 他の料理との組み合わせ提案: サイドメニューや飲み物、デザートなど相性の良い組み合わせを挙げてください。
+7. 他の料理との組み合わせ提案
 8. アレンジ提案: 気分や食材の在庫によって変化を加える方法や、手間を省く工夫を提案してください。
 
 【注意事項】
 - 各セクションは必ず記載してください。
 - 気分に寄り添った内容で、ユーザーが共感できる提案を心がけてください。
-- 初心者でも楽しく作れる具体的かつ実用的な内容にしてください。
 - 気分や状況に合わせて柔軟にアレンジできるアイデアを含めてください。
     `;
 
