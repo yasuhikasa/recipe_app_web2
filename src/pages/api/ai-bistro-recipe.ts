@@ -11,8 +11,8 @@ const openai = new OpenAI({
 type RecipeRequestBody = {
   sauce: string;
   cookingStyle: string;
-  garnish: string;
-  winePairing: string;
+  difficulty: string;
+  flavorTheme: string;
   platingStyle: string;
   preferredIngredients: string;
 };
@@ -26,8 +26,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const {
       sauce= '',
       cookingStyle= '',
-      garnish= '',
-      winePairing= '',
+      difficulty= '',
+      flavorTheme= '',
       platingStyle= '',
       preferredIngredients= '',
     } = req.body as RecipeRequestBody;
@@ -37,8 +37,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 あなたはプロのビストロ料理アドバイザーです。テーマは「こだわりのビストロ料理」です。以下の条件に従ってビストロ料理に取り組む人が作りたいと思うようなレシピを提案してください。
 - ソースの種類: ${sauce || "おまかせ"}
 - 料理スタイル: ${cookingStyle || "おまかせ"}
-- 付け合わせ: ${garnish || "おまかせ"}
-- ワインペアリング: ${winePairing || "おまかせ"}
+- 料理の難易度: ${difficulty || "おまかせ"}
+- 風味のテーマ: ${flavorTheme || "おまかせ"}
 - 盛り付けスタイル: ${platingStyle || "おまかせ"}
 - 使いたい食材: ${preferredIngredients || "指定なし"}
 

@@ -11,9 +11,10 @@ const openai = new OpenAI({
 type RecipeRequestBody = {
   sauce?: string;
   cookingStyle?: string;
-  garnish?: string;
+  // garnish?: string;
   cheese?: string;
-  steakDoneness?: string;
+  // steakDoneness?: string;
+  cookingPreference?: string;
   preferredIngredients?: string;
 };
 
@@ -26,9 +27,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const {
       sauce= '',
       cookingStyle= '',
-      garnish= '',
+      // garnish= '',
       cheese= '',
-      steakDoneness= '',
+      cookingPreference= '',
       preferredIngredients= '',
     } = req.body as RecipeRequestBody;
 
@@ -37,9 +38,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 あなたはプロの洋食料理アドバイザーです。テーマは「こだわりの洋食」です。以下の条件に従って洋食料理に取り組む人が作りたいと思うようなレシピを提案してください。
 - ソースの種類: ${sauce || "おまかせ"}
 - 料理スタイル: ${cookingStyle || "おまかせ"}
-- 付け合わせ: ${garnish || "おまかせ"}
 - チーズの種類: ${cheese || "おまかせ"}
-- ステーキの焼き加減: ${steakDoneness || "おまかせ"}
+- 調理プロセスの好み: ${cookingPreference || "おまかせ"}
 - 使いたい食材: ${preferredIngredients || "指定なし"}
 
 レシピには以下の情報を含めてください:
