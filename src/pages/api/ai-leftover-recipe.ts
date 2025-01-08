@@ -55,7 +55,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     【注意事項】
     - 各セクションは必ず記載してください。
-    - 情報は具体的で役立つ内容にし、初心者から中級者まで楽しめる内容にしてください。
+    - 情報は具体的で役立つ内容にし、楽しめる内容にしてください。
     - 冷蔵庫にある材料を最大限活用してください。
     `;
 
