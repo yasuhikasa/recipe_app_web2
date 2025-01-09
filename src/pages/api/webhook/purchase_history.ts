@@ -1,48 +1,135 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import supabase from '../../../lib/supabaseClient';
+import { createClient } from '@supabase/supabase-js';
+import * as jose from 'jose';
+import * as crypto from 'crypto';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  console.log('Webhook raw body:', req.body);
+const SUPABASE_URL = process.env.SUPABASE_URL || '';
+const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY || '';
 
+if (!SUPABASE_URL || !SUPABASE_KEY) {
+  throw new Error('Supabaseの環境変数が設定されていません。');
+}
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+interface AppleNotificationData {
+  appAppleId: number;
+  bundleId: string;
+  environment: string;
+  signedTransactionInfo?: string;
+}
+
+interface SignedTransactionInfo {
+  email: string;
+  productId: string;
+  purchaseDate: string;
+  receiptData: string;
+}
+
+interface AppleNotificationPayload {
+  notificationType: string;
+  subtype?: string;
+  data: AppleNotificationData;
+}
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
   try {
-    const { email, product_id, receipt_data } = req.body;
+    const { signedPayload } = req.body;
 
-    // リクエスト内容をログに記録
-    console.log('Received purchase data:', { email, product_id, receipt_data });
-
-    if (!email || !product_id || !receipt_data) {
-      console.warn('Missing required fields:', { email, product_id, receipt_data });
-      return res.status(400).json({ message: 'Missing required fields' });
+    if (!signedPayload) {
+      return res.status(400).json({ error: 'No signedPayload provided.' });
     }
 
+    const decodedPayload: AppleNotificationPayload =
+      await decodeJwt<AppleNotificationPayload>(signedPayload);
+    console.log('Decoded Payload:', JSON.stringify(decodedPayload, null, 2));
+
+    const { data } = decodedPayload;
+
+    if (!data.signedTransactionInfo) {
+      return res
+        .status(400)
+        .json({ error: 'Missing signedTransactionInfo in the payload.' });
+    }
+
+    const transactionInfo = await decodeJwt<SignedTransactionInfo>(
+      data.signedTransactionInfo
+    );
+
+    console.log(
+      'Decoded signedTransactionInfo:',
+      JSON.stringify(transactionInfo, null, 2)
+    );
+
     // 購入情報を保存
-    console.log('Attempting to insert purchase record into database...');
+    await savePurchaseToSupabase(transactionInfo);
+
+    res.status(200).json({ message: 'Webhook processed successfully' });
+  } catch (error) {
+    console.error('Webhook Error:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      details: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
+
+async function decodeJwt<T>(signedPayload: string): Promise<T> {
+  try {
+    const header = jose.decodeProtectedHeader(signedPayload);
+
+    if (!header.x5c || !Array.isArray(header.x5c) || header.x5c.length === 0) {
+      throw new Error('x5c field is missing in JWT header.');
+    }
+
+    const x5cCertificate = header.x5c[0];
+    const pemCertificate = `-----BEGIN CERTIFICATE-----\n${x5cCertificate.match(/.{1,64}/g)?.join('\n')}\n-----END CERTIFICATE-----`;
+    const publicKey = crypto.createPublicKey(pemCertificate);
+
+    const { payload } = await jose.jwtVerify(signedPayload, publicKey);
+    return payload as T;
+  } catch (error) {
+    console.error('JWT Verification Error:', error);
+    throw new Error('Invalid signedPayload.');
+  }
+}
+
+async function savePurchaseToSupabase(
+  transactionInfo: SignedTransactionInfo
+): Promise<void> {
+  const { email, productId, purchaseDate, receiptData } = transactionInfo;
+
+  console.log('Saving purchase to Supabase:', {
+    email,
+    product_id: productId,
+    purchase_date: new Date(purchaseDate),
+    receipt_data: receiptData,
+  });
+
+  try {
     const { error } = await supabase.from('purchase_history').insert([
       {
         email,
-        product_id,
-        receipt_data,
+        product_id: productId,
+        purchase_date: new Date(purchaseDate),
+        receipt_data: receiptData,
       },
     ]);
 
     if (error) {
-      console.error('Database insert error:', error);
-      throw new Error(error.message);
+      throw new Error(`Failed to insert purchase: ${error.message}`);
     }
 
-    console.log('Purchase record inserted successfully.');
-    res.status(200).json({ message: 'Purchase recorded successfully' });
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error('Error saving purchase history:', {
-        message: error.message,
-        stack: error.stack,
-      });
-      res.status(500).json({ message: error.message || 'Unexpected server error' });
-    } else {
-      console.error('Unknown error saving purchase history:', error);
-      res.status(500).json({ message: 'Failed to record purchase due to unknown error' });
-    }
+    console.log('Purchase saved successfully.');
+  } catch (err) {
+    console.error('Error saving purchase:', err);
+    throw err;
   }
 }
