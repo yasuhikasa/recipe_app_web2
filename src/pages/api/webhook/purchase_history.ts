@@ -21,6 +21,7 @@ interface AppleNotificationData {
 
 interface SignedTransactionInfo {
   transactionId: string;
+  originalTransactionId: string;
   productId: string;
   purchaseDate: string;
   price: number;
@@ -104,9 +105,10 @@ async function decodeJwt<T>(signedPayload: string): Promise<T> {
 async function savePurchaseToSupabase(
   transactionInfo: SignedTransactionInfo
 ): Promise<void> {
-  const { transactionId, productId, purchaseDate, price } = transactionInfo;
+  const { originalTransactionId, transactionId, productId, purchaseDate, price } = transactionInfo;
 
   console.log('Saving purchase to Supabase:', {
+    original_transaction_id: originalTransactionId,
     transaction_id: transactionId,
     product_id: productId,
     purchase_date: new Date(purchaseDate),
@@ -116,6 +118,7 @@ async function savePurchaseToSupabase(
   try {
     const { error } = await supabase.from('purchase_history').insert([
       {
+        original_transaction_id: originalTransactionId,
         transaction_id: transactionId,
         product_id: productId,
         purchase_date: new Date(purchaseDate),
