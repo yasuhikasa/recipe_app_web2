@@ -6,7 +6,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   switch (method) {
     case 'GET': {
-      const { user_id, label_id, limit=20, offset=0 } = req.query;
+      const { user_id, label_id, limit=30, offset=0 } = req.query;
 
       if (!user_id) {
         return res.status(400).json({ message: 'user_id is required' });
@@ -36,7 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             `)
             .eq('user_id', user_id)
             .eq('recipe_labels.label_id', label_id)
-            .range(Number(offset) || 0, (Number(offset) || 0) + (Number(limit) || 20) - 1);
+            .range(Number(offset) || 0, (Number(offset) || 0) + (Number(limit) || 30) - 1);
 
           if (error) {
             throw new Error(`Error fetching recipes: ${error.message}`);
@@ -49,7 +49,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             .from('recipes')
             .select('id, title')
             .eq('user_id', user_id)
-            .range(Number(offset) || 0, (Number(offset) || 0) + (Number(limit) || 20) - 1);
+            .range(Number(offset) || 0, (Number(offset) || 0) + (Number(limit) || 30) - 1);
 
           if (error) {
             throw new Error(`Error fetching recipes: ${error.message}`);
