@@ -11,7 +11,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         label_id,
         limit = 30,
         offset = 0,
-        sortField = 'createdAt', // デフォルトのソートフィールド
+        sortField = 'created_at', // デフォルトのソートフィールド
         sortOrder = 'desc',      // デフォルトのソート順
       } = req.query;
 
