@@ -2,12 +2,8 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import supabase from '../../../lib/supabaseClient';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { method } = req;
+  console.log('Webhook raw body:', req.body);
 
-  if (method !== 'POST') {
-    res.setHeader('Allow', ['POST']);
-    return res.status(405).end(`Method ${method} Not Allowed`);
-  }
 
   try {
     const { email, product_id, receipt_data } = req.body;
