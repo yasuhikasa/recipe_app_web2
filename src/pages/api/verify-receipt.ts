@@ -55,27 +55,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       throw new Error(`Receipt verification failed with status: ${receiptData.status}`);
     }
 
-    // `in_app` 配列から最新の購入情報を取得
-    const inAppPurchases = receiptData.receipt?.in_app;
-    if (!inAppPurchases || inAppPurchases.length === 0) {
-      throw new Error('No in-app purchases found in receipt');
+    // 最新の購入情報を取得
+    const latestTransaction = receiptData.latest_receipt_info?.[0]; // 最新トランザクションを取得
+    if (!latestTransaction) {
+      throw new Error('No latest transaction found in receipt');
     }
 
-    const latestPurchase = inAppPurchases[inAppPurchases.length - 1];
-    const originalTransactionId = latestPurchase.original_transaction_id;
+    const originalTransactionId = latestTransaction.original_transaction_id;
 
     if (!originalTransactionId) {
       throw new Error('Original Transaction ID is missing in receipt');
     }
 
     // `user_profiles` テーブルの `original_transaction_id` を更新
-    const { error: updateError } = await supabase
+    const { error: profileError } = await supabase
       .from('user_profiles')
       .update({ original_transaction_id: originalTransactionId })
       .eq('user_id', userId);
 
-    if (updateError) {
-      throw new Error(`Failed to update user_profiles: ${updateError.message}`);
+    if (profileError) {
+      throw new Error(`Failed to update user_profiles: ${profileError.message}`);
     }
 
     res.status(200).json({ message: 'User profile updated successfully' });
