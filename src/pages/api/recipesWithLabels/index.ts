@@ -24,7 +24,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const { data: labels, error: labelsError } = await supabase
           .from('labels')
           .select('id, name')
-          .eq('user_id', user_id);
+          .eq('user_id', user_id)
+          .order('id', { ascending: true });
 
         if (labelsError) {
           throw new Error(`Error fetching labels: ${labelsError.message}`);
